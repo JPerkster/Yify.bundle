@@ -1,0 +1,145 @@
+HTTP_HEADERS = {
+	'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36',
+	'Referer': 'http://yify.tv/'
+}
+
+JSON_URL = 'http://yify.tv/reproductor2/pk/pk/plugins/player_p2.php'
+RE_PLAYER = Regex('showPkPlayer\("([^"]+)')
+
+OMDB_URL = 'http://www.omdbapi.com/?i=%s'
+LANG = {'English': 'en'}
+
+####################################################################################################
+def NormalizeURL(url):
+
+	return url.split('#')[0].split('?')[0]
+
+####################################################################################################
+def MetadataObjectForURL(url):
+
+	json_obj = GetJSON(url) # Check if a movie is available to stream
+
+	html = HTML.ElementFromURL(url, headers=HTTP_HEADERS)
+
+	title = html.xpath('//meta[@property="og:title"]/@content')[0]
+	summary = html.xpath('//meta[@property="og:description"]/@content')[0]
+	thumb = html.xpath('//meta[@property="og:image"]/@content')[0]
+	rating = None
+
+	try: genres = html.xpath('//meta[@itemprop="genre"]/@content')[0].split(', ')
+	except: genres = None
+
+	try: directors = html.xpath('//meta[@itemprop="director"]/@content')[0].split(', ')
+	except: directors = None
+
+	try: writers = html.xpath('//meta[@itemprop="author"]/@content')[0].split(', ')
+	except: writers = None
+
+	try: year = int(html.xpath('//a[@rel="tag" and contains(@href, "/years/")]/text()')[0])
+	except: year = None
+
+	try: duration = int(html.xpath('//meta[@itemprop="duration"]/@content')[0].strip()) * 1000
+	except: duration = None
+
+	imdb_id = html.xpath('//a[contains(@href, "imdb.com/title/tt")]/@href')
+
+	if len(imdb_id) > 0:
+		imdb_id = imdb_id[0].split('?')[0].split('/')[4]
+
+		try:
+			omdb_json = JSON.ObjectFromURL(OMDB_URL % imdb_id)
+
+			thumb = '%s.jpg' % omdb_json['Poster'].split('._')[0] if omdb_json['Poster'] != 'N/A' else thumb
+			rating = float(omdb_json['imdbRating']) if 'imdbRating' in omdb_json and omdb_json['imdbRating'] != 'N/A' else None
+
+			language = omdb_json['Language'].split(',')[0] if 'Language' in omdb_json and omdb_json['Language'] != 'N/A' else None
+			AudioStreamObject.language_code = LANG[language] if language in LANG else 'xx'
+
+		except:
+			pass
+
+	if rating:
+		summary = '%s\n\nIMDb: %s' % (summary, rating)
+
+	return MovieObject(
+		title = title,
+		summary = summary,
+		genres = genres,
+		directors = directors,
+		writers = writers,
+		year = year,
+		duration = duration,
+		rating = rating,
+		thumb = Resource.ContentsOfURLWithFallback(url=thumb, fallback='icon-default.jpg')
+	)
+
+####################################################################################################
+def MediaObjectsForURL(url):
+
+	return [
+		MediaObject(
+			parts = [
+				PartObject(key=Callback(PlayVideo, url=url, res=resolution))
+			],
+			video_resolution = resolution,
+			bitrate = bitrate,
+			container = Container.MP4,
+			video_codec = VideoCodec.H264,
+			audio_codec = AudioCodec.AAC,
+			audio_channels = 2,
+			optimized_for_streaming = True
+		) for resolution, bitrate in [(1080, 3000), (720, 1500)]
+	]
+
+####################################################################################################
+@indirect
+def PlayVideo(url, res):
+
+	json_obj = GetJSON(url)
+
+	if res == 1080:
+		width = 1920
+	else:
+		width = 1280
+
+	available_resolutions = []
+
+	for media in json_obj:
+		if 'url' in media and 'type' in media and media['type'] == 'video/mpeg4':
+			available_resolutions.append(media['width'])
+
+	if len(available_resolutions) < 1:
+		for media in json_obj:
+			if 'url' in media and 'gs.video.tt' in media['url'] and 'type' in media and media['type'] == 'application/x-shockwave-flash':
+				available_resolutions.append(media['width'])
+
+	if len(available_resolutions) < 1:
+		raise Ex.MediaNotAvailable
+
+	closest = min((abs(width - i), i) for i in available_resolutions)[1]
+
+	for media in json_obj:
+		if 'type' in media and media['type'] in ('video/mpeg4', 'application/x-shockwave-flash') and media['width'] == closest:
+
+			#Log('\n----------\nOriginating URL: %s\nChosen resolution: %s\nSelected resolution: %sx%s\nVideo URL: %s\n----------' % (url, res, media['width'], media['height'], media['url']))
+
+			return IndirectResponse(VideoClipObject, key=media['url'])
+
+	raise Ex.MediaNotAvailable
+
+####################################################################################################
+def GetJSON(url):
+
+	data = HTTP.Request(url, headers=HTTP_HEADERS).content
+	video_id = RE_PLAYER.search(data)
+
+	if not video_id:
+		Log('YIFY ERROR: Cannot find a video id')
+		raise Ex.MediaNotAvailable
+
+	try:
+		json_obj = JSON.ObjectFromURL(JSON_URL, values={'url': video_id.group(1)}, headers=HTTP_HEADERS)
+		return json_obj
+	except:
+		Log('YIFY ERROR: This video is not available - %s' % url)
+		raise Ex.MediaNotAvailable
