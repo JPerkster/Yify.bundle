@@ -138,7 +138,10 @@ def GetJSON(url):
 		raise Ex.MediaNotAvailable
 
 	try:
-		json_obj = JSON.ObjectFromURL(JSON_URL, values={'url': video_id.group(1)}, headers=HTTP_HEADERS)
+		headers = HTTP_HEADERS
+		headers['Referer'] = url
+
+		json_obj = JSON.ObjectFromURL(JSON_URL, values={'url': video_id.group(1)}, headers=headers)
 		return json_obj
 	except:
 		Log('YIFY ERROR: This video is not available - %s' % url)
