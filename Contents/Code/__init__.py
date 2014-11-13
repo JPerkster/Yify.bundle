@@ -1,7 +1,7 @@
 NAME = 'Yify'
 BASE_URL = 'http://yify.tv'
-RELEASES_URL = '%s/files/releases/page/%%d/' % BASE_URL
-POPULAR_URL = '%s/popular/page/%%d/' % BASE_URL
+RELEASES_URL = '%s/files/releases/page/%%d/?meta_key=imdbRating&orderby=meta_value&order=desc' % BASE_URL
+POPULAR_URL = '%s/popular/page/%%d/?meta_key=imdbRating&orderby=meta_value&order=desc' % BASE_URL
 TOP250_URL = '%s/files/movies/page/%%d/?meta_key=imdbRating&orderby=meta_value&order=desc' % BASE_URL
 GENRE_URL = '%s/genre/%%s/page/%%%%d/' % BASE_URL
 
