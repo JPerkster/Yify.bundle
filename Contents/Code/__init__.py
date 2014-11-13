@@ -4,6 +4,7 @@ RELEASES_URL = '%s/files/releases/page/%%d/?meta_key=imdbRating&orderby=meta_val
 POPULAR_URL = '%s/popular/page/%%d/?meta_key=imdbRating&orderby=meta_value&order=desc' % BASE_URL
 TOP250_URL = '%s/files/movies/page/%%d/?meta_key=imdbRating&orderby=meta_value&order=desc' % BASE_URL
 GENRE_URL = '%s/genre/%%s/page/%%%%d/' % BASE_URL
+LANGUAGE_URL = '%s/languages/%%s/page/%%%%d/' % BASE_URL 
 
 RE_POSTS = Regex('var posts = ({.+});')
 
@@ -30,6 +31,7 @@ def MainMenu():
 	oc.add(DirectoryObject(key = Callback(ListMovies, title='Popular', url=POPULAR_URL), title='Popular'))
 	oc.add(DirectoryObject(key = Callback(ListMovies, title='Top +250', url=TOP250_URL), title='Top +250'))
 	oc.add(DirectoryObject(key = Callback(ListGenres), title='Genres'))
+	oc.add(DirectoryObject(key = Callback(ListLanguages), title='Languages'))
 	oc.add(DirectoryObject(key = Callback(Watchlist), title='Watchlist'))
 	oc.add(SearchDirectoryObject(identifier='com.plexapp.plugins.yify', title='Search', summary='Search Movies on Yify', prompt='Search for...'))
 
@@ -120,6 +122,42 @@ def ListGenres():
 	oc.add(DirectoryObject(key = Callback(ListMovies, title='Romance', url=GENRE_URL % 'romance'), title='Romance'))
 	oc.add(DirectoryObject(key = Callback(ListMovies, title='Science fiction', url=GENRE_URL % 'sci-fi'), title='Science fiction'))
 	oc.add(DirectoryObject(key = Callback(ListMovies, title='Thriller', url=GENRE_URL % 'thriller'), title='Thriller'))
+
+	return oc
+
+####################################################################################################
+@route('/video/yify/listlanguages')
+def ListLanguages():
+
+	oc = ObjectContainer(title2='Languages')
+
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Arabic', url=LANGUAGE_URL % 'arabic'), title='Arabic'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Bulgarian', url=LANGUAGE_URL % 'bulgarian'), title='Bulgarian'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Chinese', url=LANGUAGE_URL % 'chinese'), title='Chinese'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Croatian', url=LANGUAGE_URL % 'croatian'), title='Croatian'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Dutch', url=LANGUAGE_URL % 'dutch'), title='Dutch'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='English', url=LANGUAGE_URL % 'english'), title='English'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Finnish', url=LANGUAGE_URL % 'finnish'), title='Finnish'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='French', url=LANGUAGE_URL % 'french'), title='French'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='German', url=LANGUAGE_URL % 'german'), title='German'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Greek', url=LANGUAGE_URL % 'greek'), title='Greek'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Hebrew', url=LANGUAGE_URL % 'hebrew'), title='Hebrew'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Hindi', url=LANGUAGE_URL % 'hindi'), title='Hindi'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Hungarian', url=LANGUAGE_URL % 'hungarian'), title='Hungarian'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Icelandic', url=LANGUAGE_URL % 'icelandic'), title='Icelandic'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Italian', url=LANGUAGE_URL % 'italian'), title='Italian'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Japanese', url=LANGUAGE_URL % 'japanese'), title='Japanese'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Korean', url=LANGUAGE_URL % 'korean'), title='Korean'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Norwegian', url=LANGUAGE_URL % 'norwegian'), title='Norwegian'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Persian', url=LANGUAGE_URL % 'persian'), title='Persian'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Polish', url=LANGUAGE_URL % 'polish'), title='Polish'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Portuguese', url=LANGUAGE_URL % 'portuguese'), title='Portuguese'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Punjabi', url=LANGUAGE_URL % 'punjabi'), title='Punjabi'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Romanian', url=LANGUAGE_URL % 'romanian'), title='Romanian'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Russian', url=LANGUAGE_URL % 'russian'), title='Russian'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Spanish', url=LANGUAGE_URL % 'spanish'), title='Spanish'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Swedish', url=LANGUAGE_URL % 'swedish'), title='Swedish'))
+	oc.add(DirectoryObject(key = Callback(ListMovies, title='Turkish', url=LANGUAGE_URL % 'turkish'), title='Turkish'))
 
 	return oc
 
